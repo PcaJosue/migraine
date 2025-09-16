@@ -1,38 +1,23 @@
 function App() {
   return (
-    <div style={{ 
-      padding: '20px', 
-      fontFamily: 'Arial, sans-serif',
-      backgroundColor: '#f5f5f5',
-      minHeight: '100vh'
-    }}>
-      <h1 style={{ color: '#333', marginBottom: '20px' }}>
-        🚀 AuraTrack - Basic Test
+    <div className="p-5 bg-gray-100 min-h-screen">
+      <h1 className="text-3xl font-bold text-gray-800 mb-5">
+        🚀 AuraTrack - Tailwind Test
       </h1>
       
-      <div style={{ 
-        backgroundColor: 'white', 
-        padding: '20px', 
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        marginBottom: '20px'
-      }}>
-        <h2 style={{ color: '#333', marginBottom: '15px' }}>✅ Application Status</h2>
-        <p><strong>React:</strong> ✅ Working</p>
-        <p><strong>Build:</strong> ✅ Successful</p>
-        <p><strong>Deploy:</strong> ✅ Live</p>
-        <p><strong>Environment:</strong> ✅ Loaded</p>
+      <div className="bg-white p-5 rounded-lg shadow-md mb-5">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">✅ Application Status</h2>
+        <p className="mb-2"><strong>React:</strong> ✅ Working</p>
+        <p className="mb-2"><strong>Build:</strong> ✅ Successful</p>
+        <p className="mb-2"><strong>Deploy:</strong> ✅ Live</p>
+        <p className="mb-2"><strong>Environment:</strong> ✅ Loaded</p>
+        <p className="mb-2"><strong>Tailwind CSS:</strong> ✅ Working</p>
       </div>
 
-      <div style={{ 
-        backgroundColor: '#e8f5e8', 
-        padding: '20px', 
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <h2 style={{ color: '#2d5a2d', marginBottom: '15px' }}>🎯 Next Phase</h2>
-        <p>Basic app is working! Now we can add components one by one.</p>
-        <p>This confirms the build and deployment process is correct.</p>
+      <div className="bg-green-100 p-5 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold text-green-800 mb-4">🎯 Next Phase</h2>
+        <p className="text-green-700 mb-2">Tailwind CSS is working! Now let's add Zustand stores.</p>
+        <p className="text-green-700">This confirms CSS and styling are not the issue.</p>
       </div>
     </div>
   )
