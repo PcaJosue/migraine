@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { supabase, isSupabaseConfigured } from '@/shared/config/supabase'
 import { useState, useEffect } from 'react'
 
 // Store simple para probar Zustand
@@ -11,60 +10,51 @@ const useTestStore = create((set) => ({
 
 function App() {
   const { count, increment, decrement } = useTestStore()
-  const [supabaseStatus, setSupabaseStatus] = useState('Checking...')
-  const [supabaseError, setSupabaseError] = useState(null)
+  const [envStatus, setEnvStatus] = useState('Checking...')
+  const [envDetails, setEnvDetails] = useState({})
 
   useEffect(() => {
-    const testSupabase = async () => {
+    const checkEnvironment = () => {
       try {
-        console.log('Testing Supabase configuration...')
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
         
-        if (!isSupabaseConfigured()) {
-          setSupabaseStatus('❌ Supabase not configured')
-          setSupabaseError('Environment variables missing or invalid')
-          return
-        }
+        console.log('Environment variables check:', {
+          hasUrl: !!supabaseUrl,
+          hasKey: !!supabaseKey,
+          urlLength: supabaseUrl?.length || 0,
+          keyLength: supabaseKey?.length || 0,
+          urlStart: supabaseUrl?.substring(0, 20) || 'N/A',
+          keyStart: supabaseKey?.substring(0, 20) || 'N/A'
+        })
 
-        if (!supabase) {
-          setSupabaseStatus('❌ Supabase client is null')
-          setSupabaseError('Failed to create Supabase client')
-          return
-        }
+        setEnvDetails({
+          hasUrl: !!supabaseUrl,
+          hasKey: !!supabaseKey,
+          urlLength: supabaseUrl?.length || 0,
+          keyLength: supabaseKey?.length || 0,
+          urlStart: supabaseUrl?.substring(0, 20) || 'N/A',
+          keyStart: supabaseKey?.substring(0, 20) || 'N/A'
+        })
 
-        setSupabaseStatus('Testing connection...')
-        
-        // Probar una consulta simple que no requiere la tabla
-        const { data, error } = await supabase
-          .from('app_users')
-          .select('count')
-          .limit(1)
-        
-        if (error) {
-          // Si es un error de tabla no encontrada, es normal
-          if (error.code === 'PGRST116' || error.message.includes('relation') || error.message.includes('does not exist')) {
-            setSupabaseStatus('✅ Supabase connected (table not found - normal)')
-          } else {
-            setSupabaseStatus('❌ Supabase connection failed')
-            setSupabaseError(error.message)
-          }
+        if (supabaseUrl && supabaseKey) {
+          setEnvStatus('✅ Environment variables found')
         } else {
-          setSupabaseStatus('✅ Supabase connected')
+          setEnvStatus('❌ Environment variables missing')
         }
       } catch (err) {
-        console.error('Supabase test error:', err)
-        setSupabaseStatus('❌ Supabase error')
-        setSupabaseError(err.message)
+        console.error('Environment check error:', err)
+        setEnvStatus('❌ Error checking environment')
       }
     }
 
-    // Delay para asegurar que todo esté cargado
-    setTimeout(testSupabase, 100)
+    checkEnvironment()
   }, [])
 
   return (
     <div className="p-5 bg-gray-100 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-800 mb-5">
-        🚀 AuraTrack - Supabase Test
+        🔍 AuraTrack - Environment Diagnostic
       </h1>
       
       <div className="bg-white p-5 rounded-lg shadow-md mb-5">
@@ -72,10 +62,9 @@ function App() {
         <p className="mb-2"><strong>React:</strong> ✅ Working</p>
         <p className="mb-2"><strong>Build:</strong> ✅ Successful</p>
         <p className="mb-2"><strong>Deploy:</strong> ✅ Live</p>
-        <p className="mb-2"><strong>Environment:</strong> ✅ Loaded</p>
         <p className="mb-2"><strong>Tailwind CSS:</strong> ✅ Working</p>
         <p className="mb-2"><strong>Zustand:</strong> ✅ Working</p>
-        <p className="mb-2"><strong>Supabase:</strong> {supabaseStatus}</p>
+        <p className="mb-2"><strong>Environment Variables:</strong> {envStatus}</p>
       </div>
 
       <div className="bg-blue-100 p-5 rounded-lg shadow-md mb-5">
@@ -98,17 +87,22 @@ function App() {
         <p className="text-blue-700 mt-2">If you can change the counter, Zustand is working!</p>
       </div>
 
-      {supabaseError && (
-        <div className="bg-red-100 p-5 rounded-lg shadow-md mb-5">
-          <h2 className="text-xl font-semibold text-red-800 mb-4">❌ Supabase Error</h2>
-          <p className="text-red-700">{supabaseError}</p>
+      <div className="bg-yellow-100 p-5 rounded-lg shadow-md mb-5">
+        <h2 className="text-xl font-semibold text-yellow-800 mb-4">🔍 Environment Variables Details</h2>
+        <div className="space-y-2 text-sm">
+          <p><strong>Has URL:</strong> {envDetails.hasUrl ? '✅ Yes' : '❌ No'}</p>
+          <p><strong>Has Key:</strong> {envDetails.hasKey ? '✅ Yes' : '❌ No'}</p>
+          <p><strong>URL Length:</strong> {envDetails.urlLength} characters</p>
+          <p><strong>Key Length:</strong> {envDetails.keyLength} characters</p>
+          <p><strong>URL Start:</strong> {envDetails.urlStart}</p>
+          <p><strong>Key Start:</strong> {envDetails.keyStart}</p>
         </div>
-      )}
+      </div>
 
       <div className="bg-green-100 p-5 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold text-green-800 mb-4">🎯 Critical Test</h2>
-        <p className="text-green-700 mb-2">This is the moment of truth! If you see the error "Cannot read properties of undefined (reading 'headers')" now, Supabase is the culprit.</p>
-        <p className="text-green-700">If everything works fine, we'll add React Query next.</p>
+        <h2 className="text-xl font-semibold text-green-800 mb-4">🎯 Next Steps</h2>
+        <p className="text-green-700 mb-2">Check the console for detailed environment variable information.</p>
+        <p className="text-green-700">If environment variables are missing, we need to configure them in Vercel.</p>
       </div>
     </div>
   )
