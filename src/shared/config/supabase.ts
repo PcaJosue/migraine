@@ -3,11 +3,21 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL
 const supabaseAnonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+// Crear cliente de Supabase solo si las variables están disponibles
+export const supabase = supabaseUrl && supabaseAnonKey 
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false, // Evitar problemas de persistencia en SSR
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    })
+  : null
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Función helper para verificar si Supabase está configurado
+export const isSupabaseConfigured = () => {
+  return supabase !== null && supabaseUrl && supabaseAnonKey
+}
 
 // Database types
 export interface Database {
