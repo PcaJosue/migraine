@@ -1,0 +1,490 @@
+{
+    "app_meta": {
+      "name": "AuraTrack (Migraine Diary MVP)",
+      "vision": "Registrar episodios en <10s y convertir datos clínicos mínimos en patrones accionables con una UI de concurso.",
+      "design_objective": "Ganar el premio a Mejor Interfaz: estética moderna, microinteracciones útiles, accesibilidad AA+ y rendimiento sobresaliente.",
+      "goal": "Captura rápida + análisis simple, sin login completo (validación ligera por usuario/contraseña en tabla Supabase).",
+      "principles": [
+        "Menos toques, más valor clínico",
+        "Campos pre-rellenados y opciones rápidas",
+        "Todo opcional excepto lo crítico",
+        "Responsive first (mobile-first) con tipografía y layout fluidos"
+      ]
+    },
+  
+    "clinic_priority_mapping": {
+      "nivel_1_imprescindible": ["started_at", "intensity", "key_symptoms", "last_meal_at"],
+      "nivel_2_alto_valor": ["last_meal_desc", "triggers_quick", "medication_quick", "ended_at_or_running"],
+      "nivel_3_contexto": ["sleep_hours", "hydration_ml", "pain_location", "pain_type", "notes"],
+      "rationale": "Priorización médica enfocada en correlacionar inicio/intensidad/síntomas cardinales con ingesta reciente."
+    },
+  
+    "catalogos_frontend": {
+      "TRIGGERS": ["café", "alcohol", "queso", "chocolate", "ayuno", "estrés", "falta_sueño", "ruido", "luz_bril", "olor_intenso", "cambio_clima", "ejercicio_intenso"],
+      "SYMPTOMS_KEYS": ["nausea", "photophobia", "phonophobia", "aura"],
+      "LOCATIONS": ["unilateral", "bilateral", "detrás_ojos", "frontal", "temporal", "occipital", "cuello"],
+      "PAIN_TYPES": ["pulsátil", "punzante", "presión", "ardor"]
+    },
+  
+    "design_system": {
+      "brand": {
+        "brand_name": "AuraTrack",
+        "tone": ["clínico-confiable", "sereno", "empoderador"],
+        "logo": {
+          "mark_concept": "onda sinusal + gota de luz (aura) formando una 'A'",
+          "safe_area": "x = altura del asta; mantener 1x alrededor",
+          "min_size_px": 24
+        },
+        "palette": {
+          "primary": {"50":"#eef6ff","100":"#d9ecff","200":"#b8dbff","300":"#8ec3ff","400":"#66a8ff","500":"#3a86ff","600":"#2d6fe0","700":"#2459ba","800":"#1e4997","900":"#15356b"},
+          "accent": {"50":"#f5f4ff","100":"#ebe9ff","200":"#d7d3ff","300":"#b5b1ff","400":"#908cff","500":"#6c68ff","600":"#5854e0","700":"#4745bb","800":"#3a3899","900":"#28286b"},
+          "success": {"500":"#16A34A"},
+          "warning": {"500":"#F59E0B"},
+          "danger": {"500":"#EF4444"},
+          "neutral": {"0":"#ffffff","50":"#f8fafc","100":"#f1f5f9","200":"#e2e8f0","300":"#cbd5e1","400":"#94a3b8","500":"#64748b","600":"#475569","700":"#334155","800":"#1f2937","900":"#0b1220"},
+          "elevated_bg_light": "#ffffff",
+          "elevated_bg_dark": "#0f1524",
+          "chart_palette": ["#3A86FF","#6C68FF","#00C2A8","#FF8FAB","#FFC857","#7E7F9A"]
+        },
+        "theming": {
+          "dark_mode": "auto y toggle manual",
+          "contrast_modes": ["standard", "high-contrast"],
+          "brand_gradients": [{"id":"primaryAura","from":"#3A86FF","to":"#6C68FF","angle":"135deg"}]
+        }
+      },
+      "typography": {
+        "families": {
+          "display": {"name":"Inter", "fallback":"ui-sans-serif, system-ui"},
+          "body": {"name":"Inter", "fallback":"ui-sans-serif, system-ui"},
+          "numeric": {"name":"Inter", "featureSettings":"tnum,lnum"}
+        },
+        "scale": {
+          "h1": {"size":"2.125rem","line":"1.2","weight":700,"tracking":"-0.01em"},
+          "h2": {"size":"1.75rem","line":"1.25","weight":700},
+          "h3": {"size":"1.375rem","line":"1.3","weight":600},
+          "body": {"size":"1rem","line":"1.5","weight":400},
+          "caption": {"size":"0.875rem","line":"1.4","weight":400}
+        },
+        "rules": {"headings_use_display": true, "numbers_use_tabular": true}
+      },
+      "layout": {
+        "grid": {"columns":12,"gutter":16,"margin":16,"max_width":1200},
+        "breakpoints": {"xs":360,"sm":480,"md":768,"lg":1024,"xl":1280},
+        "spacing_scale": [4,8,12,16,20,24,32,40,48,64],
+        "radius": {"sm":8,"md":12,"lg":16,"xl":24,"pill":999},
+        "elevation": {
+          "level_0":"none",
+          "level_1":"0 1px 2px rgba(0,0,0,0.06)",
+          "level_2":"0 4px 12px rgba(0,0,0,0.08)",
+          "level_3":"0 10px 24px rgba(0,0,0,0.10)"
+        },
+        "density_modes": ["comfortable","compact"]
+      },
+      "motion": {
+        "tokens": {
+          "ease_out":"cubic-bezier(0.2,0.8,0.2,1)",
+          "ease_in_out":"cubic-bezier(0.4,0,0.2,1)",
+          "duration_fast":120,
+          "duration_base":180,
+          "duration_slow":280
+        },
+        "microinteractions": {
+          "button_press": {"scale":0.98,"duration":120},
+          "card_hover": {"elevation":"level_2","translateY":-2},
+          "toast_enter": {"y":12,"opacity":0,"to_y":0,"to_opacity":1}
+        },
+        "page_transitions": {"type":"fade-slide","enter":{"y":8,"opacity":0,"duration":200},"exit":{"y":-8,"opacity":0,"duration":160}}
+      },
+      "iconography": {"style":"outline + sutil filled", "set": ["calendar","bolt","pill","moon","sun","chart","export","edit","filter","plus","clock","meal","coffee","flash","shield"]},
+      "data_viz": {
+        "charts": [
+          {"id":"trend_episodes","type":"line","curve":"monotone","dots":false,"thickness":2},
+          {"id":"top_triggers","type":"bar","radius":8,"bar_gap":8},
+          {"id":"daytime_heatmap","type":"heatmap","bins_hour":24,"bins_weekday":7}
+        ],
+        "rules": ["máx 3 visualizaciones por vista","leyendas claras","sin 3D","usar palette.chart_palette"]
+      },
+      "tokens_tailwind": {
+        "primary":"bg-[#3A86FF] text-white",
+        "cta":"bg-gradient-to-tr from-[#3A86FF] to-[#6C68FF] text-white",
+        "card":"bg-white dark:bg-[#0f1524] rounded-2xl shadow",
+        "input":"h-11 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 focus:ring-2 focus:ring-[#3A86FF]/40",
+        "shadows": {"focus":"0 0 0 3px rgba(58,134,255,0.35)"}
+      }
+    },
+  
+    "responsive_design": {
+      "breakpoints": {"xs":360,"sm":480,"md":768,"lg":1024,"xl":1280},
+      "grid_rules": {
+        "container": {"max_width":1200,"padding_x":{"xs":12,"sm":16,"md":20,"lg":24}},
+        "columns": {"xs":4,"sm":6,"md":8,"lg":12},
+        "gutter": {"xs":8,"sm":12,"md":16,"lg":20}
+      },
+      "typography_fluid": {
+        "scale": {
+          "h1":{"xs":"1.6rem","md":"2.0rem","lg":"2.25rem"},
+          "h2":{"xs":"1.35rem","md":"1.6rem","lg":"1.75rem"},
+          "h3":{"xs":"1.15rem","md":"1.3rem","lg":"1.375rem"},
+          "body":{"xs":"0.95rem","md":"1rem","lg":"1.05rem"},
+          "caption":{"xs":"0.8rem","md":"0.85rem","lg":"0.9rem"}
+        },
+        "line_height":{"min":1.35,"max":1.6},
+        "rules":["usar clamp()","números tabulares para KPIs"]
+      },
+      "touch_targets": {"min_size_px":44,"hit_slop_px":8,"controls_spacing_px":12},
+      "navigation_patterns": {"xs_sm":"Topbar fija + FAB '+ Registrar'","md":"Topbar + tabs visibles","lg_xl":"AppShell con sidebar y 2 columnas"},
+      "component_responsive_rules": {
+        "Topbar": {"xs_sm":"logo reducido, iconos","md_lg":"acciones con texto + buscador","behavior":"colapsar overflow en kebab"},
+        "Home/KPIRow": {"xs":"stack vertical","sm_md":"grid 2 columnas","lg":"grid 3 columnas","skeleton":"cards 72px altura"},
+        "QuickEntryModal": {"xs_sm":"full-screen drawer, 1 col","md":"diálogo 2 cols","lg":"2 cols + side-tips","keyboard":"evitar solape teclado móvil"},
+        "EntryCard": {"xs":"2 filas badges","md":"1 fila","lg":"meta en aside derecho"},
+        "FiltersBar": {"xs":"'Filtros' abre sheet","md":"controles inline","lg":"1 fila"},
+        "Forms/InputRow": {"xs":"1 col; labels arriba","md":"2 cols; labels izquierda","validation":"errores debajo en xs"},
+        "Charts": {"xs":"altura 220-260","md":"280-320","lg":"340-400","margin":{"xs":8,"md":12,"lg":16}},
+        "Tables/Lists": {"xs":"cards","md":"tabla 3-4 cols","lg":"tabla completa"}
+      },
+      "gesture_rules": {"swipe_back":"respetar nativo","pull_to_refresh":"off por defecto","swipe_actions":"opcional en cards con undo"},
+      "images_media": {"policy":["SVG para iconos","srcset y tamaños","lazy-load bajo el fold","aspect-ratio fijo para evitar CLS"]},
+      "performance_responsive": {"code_split_routes":true,"preload_above_the_fold":true,"defer_non_critical_js":true,"prefetch_on_hover_md_plus":true,"target_TTI_s":2.5},
+      "a11y_responsive": {"focus_ring_visible":true,"keyboard_trap_free_modals":true,"reduce_motion_support":true,"hit_contrast_AA":true},
+      "quick_entry_priority_flow": {
+        "order_xs": ["intensity","started_at","key_symptoms","last_meal_at","save"],
+        "order_md_plus": ["intensity","started_at | last_meal_at","key_symptoms","last_meal_desc","save"],
+        "cta_behavior": "CTA ancho completo en xs; alineado derecha en md+",
+        "sticky_footer": "Botón Guardar pegado en móviles"
+      },
+      "layout_examples_tailwind": {
+        "container":"mx-auto px-3 sm:px-4 md:px-5 lg:px-6 max-w-[1200px]",
+        "grid_home":"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4",
+        "modal_quick_entry":"w-screen h-screen sm:h-auto sm:max-w-2xl"
+      },
+      "acceptance_criteria": [
+        "Operable a 360px de ancho",
+        "Registro p50 < 10s en móvil 3G rápido",
+        "CLS < 0.1 en xs",
+        "Controles ≥44px alto en móvil",
+        "Charts legibles sin colisiones en xs"
+      ],
+      "test_matrix": {
+        "browsers": ["Chrome Android","Safari iOS","Firefox","Edge"],
+        "viewports_px": [
+          {"name":"xs-phone","w":360,"h":740},
+          {"name":"sm-phone","w":414,"h":896},
+          {"name":"md-tablet","w":768,"h":1024},
+          {"name":"lg-laptop","w":1366,"h":768}
+        ],
+        "scenarios": ["Abrir → Quick Entry → Guardar","Lista con 50+ registros","Rotación móvil sin perder contexto","Autoscroll con teclado virtual"]
+      }
+    },
+  
+    "ui_ux": {
+      "navigation": {"topbar":{"left":["brand_mark"],"right":["theme_toggle","export_button"]},"tabs_main":["Home","Entries","Insights","Settings"]},
+      "home": {
+        "kpi_row": [
+          {"id":"episodes_7d","label":"Episodios (7d)"},
+          {"id":"avg_intensity_7d","label":"Intensidad media"},
+          {"id":"aura_rate_7d","label":"Aura %"}
+        ],
+        "primary_cta": {"label":"+ Registrar ahora","style":"cta"},
+        "quick_tips": ["Hidrátate","Evita pantallas brillantes","Respira 4-7-8"]
+      },
+      "quick_entry_modal": {
+        "goal":"<10s, 5 inputs o menos",
+        "fields_order": [
+          {"key":"intensity","control":"slider-1-10","default":7,"required":true},
+          {"key":"started_at","control":"datetime","default":"now()","required":true},
+          {"key":"key_symptoms","control":"chips-toggle","options_ref":"SYMPTOMS_KEYS","required":true,"default":{"nausea":false,"photophobia":false,"phonophobia":false,"aura":false}},
+          {"key":"last_meal_at","control":"segmented","required":true,"options":["Hace 1h","2h","3h",">4h","No recuerdo"],"maps":{"Hace 1h":"-1h","2h":"-2h","3h":"-3h",">4h":"-4h"},"fallback":"datetime-picker"},
+          {"key":"last_meal_desc","control":"autocomplete-text","placeholder":"¿Qué comiste/bebiste?","history_suggestions":true},
+          {"key":"triggers_quick","control":"chips-multi","options_ref":"TRIGGERS"}
+        ],
+        "medication_fastlane": {
+          "collapsed_by_default": true,
+          "fields":[
+            {"key":"med_taken","control":"switch"},
+            {"key":"med_name","control":"select-search","placeholder":"Medicamento"},
+            {"key":"dose","control":"text","placeholder":"50mg"},
+            {"key":"taken_at","control":"datetime","default":"now()"},
+            {"key":"effectiveness","control":"slider-0-10"}
+          ]
+        },
+        "actions": [{"id":"save","label":"Guardar","variant":"primary","width":"full"},{"id":"expand","label":"Completar detalles","variant":"ghost"}],
+        "microcopy": {"header":"Registrar ahora","success":"Episodio guardado","validation_error":"Revisa los campos obligatorios"}
+      },
+      "entries_list": {
+        "empty_state":{"title":"Sin registros","desc":"Empieza con “Registrar ahora”.","cta":"+ Registrar ahora"},
+        "item_card": {
+          "badge_intensity_color_map": {"1-3":"neutral-300","4-6":"warning-500","7-10":"danger-500"},
+          "content": ["started_at_human","intensity_badge","symptoms_icons","trigger_chips","medication_badge"]
+        },
+        "filters": ["date_range","min_intensity","has_aura","trigger_contains","meal_gap_hours"],
+        "bulk_actions": ["export_csv"]
+      },
+      "entry_detail": {
+        "header_actions": ["edit","export_single"],
+        "tabs": [
+          {"name":"Episodio","sections":["started_at","ended_at","intensity","key_symptoms","last_meal_at","last_meal_desc","triggers_quick","medication_quick"]},
+          {"name":"Dolor","sections":["pain_location","pain_type"]},
+          {"name":"Contexto","sections":["sleep_hours","hydration_ml","notes"]}
+        ]
+      },
+      "insights": {
+        "cards": [
+          {"id":"episodes_7d","kpi":true},
+          {"id":"avg_intensity_7d","kpi":true},
+          {"id":"top_triggers_30d","chart":"bar"},
+          {"id":"daytime_heatmap","chart":"heatmap"}
+        ],
+        "cta_secondary":{"label":"Exportar CSV","icon":"export"}
+      },
+      "settings": {
+        "sections": [
+          {"title":"Zona horaria","control":"select-tz"},
+          {"title":"Preferencias de entrada rápida","control":"toggles"},
+          {"title":"Seguridad básica","controls":["username","password (hash client-side)"],"note":"MVP sin Supabase Auth"}
+        ]
+      },
+      "microinteractions_detail": {
+        "chips_toggle": {"selected":"bg-primary-50 text-primary-700 border-primary-200","animation":"scale 0.98→1"},
+        "slider_value_popover": {"show_on_drag":true,"format":"● 7/10","shadow":"level_2"},
+        "segmented_control": {"thumb":"inercia sutil","focus_ring":"primary 3px"},
+        "saving_state": {"button":"spinner inline","label_change":"Guardando… → Guardado"}
+      },
+      "empty_states_illustration": {
+        "style":"línea limpia + acento azul",
+        "home_empty":"persona descansando en habitación oscura con luz tenue",
+        "insights_empty":"gráfica con puntos que aparecen al tener datos"
+      },
+      "gamification_soft": {
+        "streaks": {"enabled":true,"metric":"días con registro","cap":7},
+        "badges":[{"id":"starter","name":"Primer registro"},{"id":"consistency","name":"3 días seguidos"},{"id":"analyst","name":"Primer insight visitado"}],
+        "copy":"Motivar sin medicalizar el logro"
+      },
+      "pwa": {"theme_color":"#3A86FF","icon_maskable":true,"offline_roadmap":["cache UI","cola de writes con reintentos"]},
+      "accessibility": {
+        "target": "WCAG 2.2 AA",
+        "requirements": [
+          "contraste mínimo 4.5:1",
+          "foco visible",
+          "navegación por teclado completa",
+          "labels explícitas",
+          "aria-live polite en toasts",
+          "errores con rol=alert",
+          "tamaño táctil ≥ 44x44px"
+        ]
+      },
+      "copywriting": {
+        "style":"breve, empático, claro",
+        "examples":{"save_ok":"Episodio guardado","save_error":"No se pudo guardar. Reintentar","quick_hint":"Solo 3 pasos para registrar."}
+      }
+    },
+  
+    "supabase": {
+      "security_mvp_note": {
+        "auth_model":"tabla app_users (username/password_hash) consultada desde cliente",
+        "warning":"no almacenar contraseñas en claro; hash en cliente (bcrypt/argon2 WASM) antes de enviar",
+        "future":"migrar a Supabase Auth con RLS real"
+      },
+      "tables": [
+        {
+          "name": "app_users",
+          "columns": [
+            {"name":"id","type":"uuid","default":"gen_random_uuid()","pk":true},
+            {"name":"username","type":"text","unique":true,"not_null":true},
+            {"name":"password_hash","type":"text","not_null":true},
+            {"name":"created_at","type":"timestamptz","default":"now()"}
+          ],
+          "notes": "MVP sin Auth de Supabase. Validación simple en frontend consultando esta tabla."
+        },
+        {
+          "name": "migraine_entries",
+          "columns": [
+            {"name":"id","type":"uuid","default":"gen_random_uuid()","pk":true},
+            {"name":"username","type":"text","not_null":true,"fk":"app_users.username"},
+            {"name":"started_at","type":"timestamptz","not_null":true},
+            {"name":"ended_at","type":"timestamptz"},
+            {"name":"intensity","type":"int2","check":"between 1 and 10","not_null":true},
+            {"name":"key_symptoms","type":"jsonb","not_null":true,"example":{"nausea":true,"photophobia":false,"phonophobia":true,"aura":false}},
+            {"name":"last_meal_at","type":"timestamptz","not_null":true},
+            {"name":"last_meal_desc","type":"text"},
+            {"name":"triggers_quick","type":"text[]","example":["estrés","luz_bril"]},
+            {"name":"medication_quick","type":"jsonb","example":{"taken":true,"name":"Sumatriptán","dose":"50mg","taken_at":"2025-09-15T14:05:00Z","effectiveness":7}},
+            {"name":"sleep_hours","type":"numeric(4,2)"},
+            {"name":"hydration_ml","type":"int4"},
+            {"name":"pain_location","type":"text[]"},
+            {"name":"pain_type","type":"text"},
+            {"name":"notes","type":"text"},
+            {"name":"created_at","type":"timestamptz","default":"now()"}
+          ],
+          "indexes": [
+            "create index on migraine_entries (username, started_at desc);",
+            "create index on migraine_entries using gin (triggers_quick);"
+          ]
+        }
+      ],
+      "queries": {
+        "auth_lightweight": "select id, username, password_hash from app_users where username = $1 limit 1",
+        "create_entry": "insert into migraine_entries (username, started_at, ended_at, intensity, key_symptoms, last_meal_at, last_meal_desc, triggers_quick, medication_quick, sleep_hours, hydration_ml, pain_location, pain_type, notes) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) returning id",
+        "list_entries_last_30d": "select * from migraine_entries where username = $1 and started_at >= now() - interval '30 days' order by started_at desc",
+        "export_by_filter": "select * from migraine_entries where username = $1 and started_at between $2 and $3 and intensity >= $4"
+      }
+    },
+  
+    "types": {
+      "MigraineEntry": {
+        "id":"string",
+        "username":"string",
+        "started_at":"string",
+        "ended_at":"string | null",
+        "intensity":"number",
+        "key_symptoms":{"nausea":"boolean","photophobia":"boolean","phonophobia":"boolean","aura":"boolean"},
+        "last_meal_at":"string",
+        "last_meal_desc":"string | null",
+        "triggers_quick":"string[] | null",
+        "medication_quick":{"taken":"boolean","name":"string | null","dose":"string | null","taken_at":"string | null","effectiveness":"number | null"},
+        "sleep_hours":"number | null",
+        "hydration_ml":"number | null",
+        "pain_location":"string[] | null",
+        "pain_type":"string | null",
+        "notes":"string | null",
+        "created_at":"string"
+      },
+      "UserLite": {"id":"string","username":"string","password_hash":"string","created_at":"string"}
+    },
+  
+    "component_library": {
+      "atoms":["Button","IconButton","Chip","Badge","Input","Select","Slider","Switch","Segmented","DateTimePicker","Toast","Card","Modal","Tooltip","Skeleton","EmptyState"],
+      "molecules":["QuickEntryForm","EntryCard","FiltersBar","KpiCard","TrendChart","BarChart","HeatmapChart"],
+      "organisms":["AppShell","TopNav","Tabs","EntriesList","EntryDetailTabs","InsightsBoard","SettingsPanel"]
+    },
+  
+    "performance_quality": {
+      "performance_targets": {"first_interaction":"<1.5s (3G rápido)","TTI":"<2.5s","CLS":"<0.1"},
+      "ux_success_metrics": ["tiempo de registro p50 < 10s","errores por formulario < 2%","retención semanal > 40%"],
+      "telemetria_no_pii": {"events":["entry_created","entry_list_viewed","insights_viewed","quick_entry_used"],"fields":["username_hash","latency_ms","client_ts"],"note":"Nunca enviar datos clínicos crudos"}
+    },
+  
+    "architecture_hexagonal": {
+      "style": "Ports & Adapters (hexagonal) aplicada a frontend + BaaS",
+      "rules": [
+        "domain no importa de UI ni infra",
+        "application orquesta casos de uso y depende de puertos (interfaces)",
+        "infra implementa adaptadores hacia Supabase/Storage/Clock",
+        "ui (interface) consume application mediante hooks y controladores"
+      ],
+      "folders": {
+        "root": "apps/aura-track",
+        "structure": [
+          "src/",
+          "src/domain/",
+          "src/domain/entities/",
+          "src/domain/value-objects/",
+          "src/domain/services/",
+          "src/domain/repositories/",
+          "src/application/",
+          "src/application/use-cases/",
+          "src/application/dto/",
+          "src/application/ports/",
+          "src/infrastructure/",
+          "src/infrastructure/adapters/",
+          "src/infrastructure/clients/",
+          "src/infrastructure/mappers/",
+          "src/interface/",
+          "src/interface/components/",
+          "src/interface/pages/",
+          "src/interface/controllers/",
+          "src/interface/routes/",
+          "src/interface/state/",
+          "src/interface/styles/",
+          "src/shared/",
+          "src/shared/utils/",
+          "src/shared/config/",
+          "src/shared/hooks/",
+          "src/shared/types/"
+        ]
+      },
+      "ports": {
+        "EntryRepositoryPort": {
+          "methods": ["create(entryDto) -> Promise<Id>", "listByRange(filterDto) -> Promise<MigraineEntry[]>", "exportCsv(filterDto) -> Promise<Blob>"]
+        },
+        "AuthPort": {"methods": ["getUser(username) -> Promise<UserLite | null>","verifyPassword(raw, hash) -> Promise<boolean>"]},
+        "ClockPort": {"methods": ["nowUtc() -> string","toTz(date, tz) -> string"]},
+        "TelemetryPort": {"methods": ["track(eventName, payload) -> void"]}
+      },
+      "adapters": {
+        "SupabaseEntryAdapter": {
+          "implements": "EntryRepositoryPort",
+          "dependencies": ["supabase client","Mapper: Dto<->DB"],
+          "notes": "Usa queries definidos en supabase.queries y serializa fechas en UTC ISO."
+        },
+        "SupabaseAuthAdapter": {"implements":"AuthPort","notes":"Selecciona user por username y valida hash en cliente (WASM)"},
+        "ClockAdapter": {"implements":"ClockPort","notes":"Usa date-fns/luxon para TZ"},
+        "TelemetryAdapter": {"implements":"TelemetryPort","notes":"PostHog/Umami anonimizando username"}
+      },
+      "use_cases": {
+        "CreateQuickEntry": {
+          "input": {"username":"string","started_at":"string","intensity":"number","key_symptoms":"object","last_meal_at":"string","optional":["last_meal_desc","triggers_quick","medication_quick"]},
+          "steps": [
+            "validar campos imprescindibles",
+            "normalizar fechas a UTC",
+            "mapear DTO a formato DB",
+            "llamar EntryRepositoryPort.create",
+            "emitir telemetría entry_created"
+          ],
+          "output": {"id":"string"}
+        },
+        "ListEntries": {
+          "input": {"username":"string","from":"string","to":"string","min_intensity":"number?"},
+          "steps": ["construir filtro","consultar repo","ordenar por started_at desc","retornar lista"],
+          "output": {"entries":"MigraineEntry[]"}
+        },
+        "ExportCsv": {
+          "input": {"username":"string","from":"string","to":"string","min_intensity":"number?"},
+          "steps": ["repo.exportCsv","descargar blob"],
+          "output": {"file":"Blob"}
+        }
+      },
+      "entities": {
+        "MigraineEntryEntity": {
+          "fields": ["started_at","intensity","key_symptoms","last_meal_at"],
+          "invariants": ["intensity in 1..10","ended_at >= started_at si existe"]
+        }
+      },
+      "mappers": {
+        "MigraineEntryMapper": {
+          "dto_to_db": "convierte objetos JS y arrays a jsonb/text[] según columnas",
+          "db_to_dto": "parsea jsonb a objetos TS y normaliza nullables"
+        }
+      },
+      "interface_binding": {
+        "hooks": ["useCreateEntry","useEntries","useExportCsv"],
+        "state": {"library":"Zustand para estado UI","cache":"TanStack Query para server-state"},
+        "controllers": ["QuickEntryController -> CreateQuickEntry","ListController -> ListEntries"]
+      },
+      "error_handling": {
+        "strategy": "result-type (Ok/Error) en application; toasts en UI",
+        "retry_policy": "expo backoff en create/list; idempotencia por contenido hash opcional"
+      }
+    },
+  
+    "acceptance_criteria_global": [
+      "Registro rápido completado en menos de 10 segundos por un usuario promedio",
+      "Datos imprescindibles almacenados y visibles en lista inmediata",
+      "UI responsive y accesible (WCAG 2.2 AA) verificada en 360px",
+      "Exportación CSV respeta filtros activos",
+      "Métricas básicas renderizan sin colisiones en móvil"
+    ],
+  
+    "deliverables": {
+      "design_assets": ["logo SVG","icon set 24px","ilustraciones SVG (3)","palette tokens JSON","typography tokens JSON","motion tokens JSON"],
+      "frontend_setup": ["Vite+React+TS","Tailwind+shadcn/ui","TanStack Query","Recharts","date-fns/luxon"],
+      "documentation": ["Guía de componentes","Guía de accesibilidad","Guía de microcopy"]
+    },
+  
+    "roadmap": {
+      "semana_1": ["DB + tablas", "Quick Entry", "Lista básica", "Export CSV simple"],
+      "semana_2": ["Full Entry (tabs)", "Filtros lista", "Insights básicos"],
+      "fase_2": ["PWA/offline", "Recordatorios locales", "Comparativas por períodos"]
+    }
+  }
+  
