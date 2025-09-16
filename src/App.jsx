@@ -32,38 +32,22 @@ function App() {
           return
         }
 
-        // Crear cliente de Supabase con configuración segura
+        // Crear cliente de Supabase con configuración mínima
         const supabase = createClient(supabaseUrl, supabaseKey, {
           auth: {
             persistSession: false,
             autoRefreshToken: false,
             detectSessionInUrl: false
-          },
-          global: {
-            headers: {
-              'X-Client-Info': 'aura-track-app'
-            }
           }
         })
 
-        setSupabaseStatus('Testing connection...')
+        setSupabaseStatus('Testing client creation...')
         
-        // Probar una consulta simple
-        const { data, error } = await supabase
-          .from('app_users')
-          .select('count')
-          .limit(1)
-        
-        if (error) {
-          // Si es un error de tabla no encontrada, es normal
-          if (error.code === 'PGRST116' || error.message.includes('relation') || error.message.includes('does not exist')) {
-            setSupabaseStatus('✅ Supabase connected (table not found - normal)')
-          } else {
-            setSupabaseStatus('❌ Supabase connection failed')
-            setSupabaseError(error.message)
-          }
+        // Solo probar que el cliente se crea correctamente
+        if (supabase) {
+          setSupabaseStatus('✅ Supabase client created successfully')
         } else {
-          setSupabaseStatus('✅ Supabase connected')
+          setSupabaseStatus('❌ Failed to create Supabase client')
         }
       } catch (err) {
         console.error('Supabase test error:', err)
@@ -79,7 +63,7 @@ function App() {
   return (
     <div className="p-5 bg-gray-100 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-800 mb-5">
-        🚀 AuraTrack - Supabase Test (Fixed)
+        🚀 AuraTrack - Supabase Client Test
       </h1>
       
       <div className="bg-white p-5 rounded-lg shadow-md mb-5">
@@ -121,9 +105,9 @@ function App() {
       )}
 
       <div className="bg-green-100 p-5 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold text-green-800 mb-4">🎯 Final Test</h2>
-        <p className="text-green-700 mb-2">This version creates the Supabase client directly in the component with secure configuration.</p>
-        <p className="text-green-700">If this works without the headers error, we can restore the full application!</p>
+        <h2 className="text-xl font-semibold text-green-800 mb-4">🎯 Client Creation Test</h2>
+        <p className="text-green-700 mb-2">This version only tests if we can create a Supabase client without making any database queries.</p>
+        <p className="text-green-700">If this fails, the issue is with the Supabase library itself, not our configuration.</p>
       </div>
     </div>
   )
