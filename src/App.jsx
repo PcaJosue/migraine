@@ -17,31 +17,48 @@ function App() {
   useEffect(() => {
     const testSupabase = async () => {
       try {
-        if (isSupabaseConfigured() && supabase) {
-          setSupabaseStatus('Testing connection...')
-          
-          // Probar una consulta simple
-          const { data, error } = await supabase
-            .from('app_users')
-            .select('count')
-            .limit(1)
-          
-          if (error) {
+        console.log('Testing Supabase configuration...')
+        
+        if (!isSupabaseConfigured()) {
+          setSupabaseStatus('❌ Supabase not configured')
+          setSupabaseError('Environment variables missing or invalid')
+          return
+        }
+
+        if (!supabase) {
+          setSupabaseStatus('❌ Supabase client is null')
+          setSupabaseError('Failed to create Supabase client')
+          return
+        }
+
+        setSupabaseStatus('Testing connection...')
+        
+        // Probar una consulta simple que no requiere la tabla
+        const { data, error } = await supabase
+          .from('app_users')
+          .select('count')
+          .limit(1)
+        
+        if (error) {
+          // Si es un error de tabla no encontrada, es normal
+          if (error.code === 'PGRST116' || error.message.includes('relation') || error.message.includes('does not exist')) {
+            setSupabaseStatus('✅ Supabase connected (table not found - normal)')
+          } else {
             setSupabaseStatus('❌ Supabase connection failed')
             setSupabaseError(error.message)
-          } else {
-            setSupabaseStatus('✅ Supabase connected')
           }
         } else {
-          setSupabaseStatus('❌ Supabase not configured')
+          setSupabaseStatus('✅ Supabase connected')
         }
       } catch (err) {
+        console.error('Supabase test error:', err)
         setSupabaseStatus('❌ Supabase error')
         setSupabaseError(err.message)
       }
     }
 
-    testSupabase()
+    // Delay para asegurar que todo esté cargado
+    setTimeout(testSupabase, 100)
   }, [])
 
   return (

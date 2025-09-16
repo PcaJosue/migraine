@@ -3,21 +3,28 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Crear cliente de Supabase solo si las variables están disponibles
-export const supabase = supabaseUrl && supabaseAnonKey 
+// Función helper para verificar si Supabase está configurado
+export const isSupabaseConfigured = () => {
+  return !!(supabaseUrl && supabaseAnonKey && 
+           supabaseUrl.length > 0 && 
+           supabaseAnonKey.length > 0)
+}
+
+// Crear cliente de Supabase solo si las variables están disponibles y son válidas
+export const supabase = isSupabaseConfigured() 
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
-        persistSession: false, // Evitar problemas de persistencia en SSR
+        persistSession: false,
         autoRefreshToken: false,
         detectSessionInUrl: false
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'aura-track-app'
+        }
       }
     })
   : null
-
-// Función helper para verificar si Supabase está configurado
-export const isSupabaseConfigured = () => {
-  return supabase !== null && supabaseUrl && supabaseAnonKey
-}
 
 // Database types
 export interface Database {
