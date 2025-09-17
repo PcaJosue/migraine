@@ -23,6 +23,11 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    target: 'es2020'
+    target: 'es2020',
+    rollupOptions: {
+      output: {
+        format: 'es'
+      }
+    }
   }
 })
