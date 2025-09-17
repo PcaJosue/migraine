@@ -36,36 +36,7 @@ export const useUIStore = create<UIState>()(
       partialize: (state) => ({
         theme: state.theme,
         currentPage: state.currentPage
-      }),
-      // Configuración más robusta para evitar problemas en SSR
-      skipHydration: true,
-      storage: {
-        getItem: (name) => {
-          try {
-            return typeof window !== 'undefined' ? localStorage.getItem(name) : null
-          } catch {
-            return null
-          }
-        },
-        setItem: (name, value) => {
-          try {
-            if (typeof window !== 'undefined') {
-              localStorage.setItem(name, value)
-            }
-          } catch {
-            // Ignorar errores de localStorage
-          }
-        },
-        removeItem: (name) => {
-          try {
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem(name)
-            }
-          } catch {
-            // Ignorar errores de localStorage
-          }
-        }
-      }
+      })
     }
   )
 )
