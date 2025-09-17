@@ -5,6 +5,7 @@ import { Button } from '@/interface/components/ui/Button'
 import { Input } from '@/interface/components/ui/Input'
 import { Tooltip } from '@/interface/components/ui/Tooltip'
 import { EditEntryModal } from '@/interface/components/EditEntryModal'
+import { EntrySummary } from '@/interface/components/EntrySummary'
 import { Download, Filter, Calendar } from 'lucide-react'
 import { formatDate } from '@/shared/utils/date'
 import { now, subtractHours } from '@/shared/utils/date'
@@ -31,11 +32,6 @@ export function EntriesPage() {
     exportCsv.mutate(filters)
   }
 
-  const getIntensityColor = (intensity: number) => {
-    if (intensity <= 3) return 'bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300'
-    if (intensity <= 6) return 'bg-warning-100 text-warning-700 dark:bg-warning-900 dark:text-warning-300'
-    return 'bg-danger-100 text-danger-700 dark:bg-danger-900 dark:text-danger-300'
-  }
 
   return (
     <div className="space-y-6">
@@ -134,48 +130,13 @@ export function EntriesPage() {
               ))}
             </div>
           ) : entries && entries.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {entries.map((entry) => (
-                <div 
-                  key={entry.id} 
-                  className="p-4 rounded-lg border bg-card cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                <EntrySummary
+                  key={entry.id}
+                  entry={entry}
                   onClick={() => setEditingEntry(entry)}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-3">
-                      <div className="text-lg font-medium">
-                        {formatDate(entry.started_at, 'dd/MM/yyyy HH:mm')}
-                      </div>
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${getIntensityColor(entry.intensity)}`}>
-                        {entry.intensity}/10
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {entry.key_symptoms.aura && (
-                        <span className="px-2 py-1 bg-accent-100 text-accent-700 dark:bg-accent-900 dark:text-accent-300 rounded-full text-xs">
-                          Aura
-                        </span>
-                      )}
-                      {entry.key_symptoms.nausea && (
-                        <span className="px-2 py-1 bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 rounded-full text-xs">
-                          Náusea
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    {entry.last_meal_desc && (
-                      <div>Última comida: {entry.last_meal_desc}</div>
-                    )}
-                    {entry.triggers_quick && entry.triggers_quick.length > 0 && (
-                      <div>Triggers: {entry.triggers_quick.join(', ')}</div>
-                    )}
-                    {entry.medication_quick?.taken && entry.medication_quick.name && (
-                      <div>Medicación: {entry.medication_quick.name} {entry.medication_quick.dose}</div>
-                    )}
-                  </div>
-                </div>
+                />
               ))}
             </div>
           ) : (

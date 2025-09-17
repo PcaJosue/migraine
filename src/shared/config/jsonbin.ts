@@ -1,4 +1,5 @@
 // Configuración de JSONBin.io
+
 const JSONBIN_API_KEY = import.meta.env.VITE_JSONBIN_API_KEY
 const JSONBIN_BIN_ID = import.meta.env.VITE_JSONBIN_BIN_ID
 
@@ -20,7 +21,14 @@ export class JSONBinClient {
 
   // Obtener todos los datos del bin
   async getData(): Promise<any> {
+
     try {
+      console.log('Fetching data from JSONBin:', {
+        url: `${JSONBIN_BASE_URL}/${this.binId}/latest`,
+        hasApiKey: !!this.apiKey,
+        binId: this.binId
+      })
+
       const response = await fetch(`${JSONBIN_BASE_URL}/${this.binId}/latest`, {
         headers: {
           'X-Master-Key': this.apiKey,
@@ -28,11 +36,24 @@ export class JSONBinClient {
         }
       })
 
+      console.log('JSONBin response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      })
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text()
+        console.error('JSONBin API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText
+        })
+        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`)
       }
 
       const result = await response.json()
+      console.log('JSONBin data received:', result)
       return result.record || { migraine_entries: [], app_users: [] }
     } catch (error) {
       console.error('Error fetching data from JSONBin:', error)
@@ -43,7 +64,15 @@ export class JSONBinClient {
 
   // Actualizar todos los datos del bin
   async updateData(data: any): Promise<boolean> {
+    // Modo desarrollo: usar localStorage
+
     try {
+      console.log('Updating data in JSONBin:', {
+        url: `${JSONBIN_BASE_URL}/${this.binId}`,
+        hasApiKey: !!this.apiKey,
+        binId: this.binId
+      })
+
       const response = await fetch(`${JSONBIN_BASE_URL}/${this.binId}`, {
         method: 'PUT',
         headers: {
@@ -53,8 +82,20 @@ export class JSONBinClient {
         body: JSON.stringify(data)
       })
 
+      console.log('JSONBin update response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      })
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text()
+        console.error('JSONBin Update Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText
+        })
+        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`)
       }
 
       return true

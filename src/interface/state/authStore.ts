@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { authAdapter } from '@/shared/config/container'
+import { hashPassword } from '@/shared/utils/crypto'
 
 interface AuthState {
   user: {
@@ -60,8 +61,8 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true })
         
         try {
-          // Crear hash simple de la contraseña (en producción usar bcrypt)
-          const passwordHash = btoa(password) // Base64 encoding simple
+          // Crear hash seguro de la contraseña usando SHA-256
+          const passwordHash = await hashPassword(password)
           
           const result = await authAdapter.createUser(username, passwordHash)
           

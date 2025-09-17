@@ -1,6 +1,7 @@
 import { jsonbinClient } from '@/shared/config/jsonbin'
 import { UserLite, Result } from '@/shared/types'
 import { AuthPort } from '@/application/ports/AuthPort'
+import { hashPassword, verifyPassword } from '@/shared/utils/crypto'
 
 export class JSONBinAuthAdapter implements AuthPort {
   async getUser(username: string): Promise<Result<UserLite | null>> {
@@ -22,9 +23,8 @@ export class JSONBinAuthAdapter implements AuthPort {
 
   async verifyPassword(rawPassword: string, hash: string): Promise<Result<boolean>> {
     try {
-      // En un entorno real, usarías bcrypt o argon2
-      // Para MVP, comparación simple (NO RECOMENDADO PARA PRODUCCIÓN)
-      const isValid = rawPassword === hash
+      // Verificación segura usando SHA-256
+      const isValid = await verifyPassword(rawPassword, hash)
       
       return {
         success: true,
