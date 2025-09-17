@@ -10,6 +10,8 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 console.log('Pre-Supabase check:', {
   hasUrl: !!supabaseUrl,
   hasKey: !!supabaseAnonKey,
+  urlValue: supabaseUrl ? supabaseUrl.substring(0, 20) + '...' : 'undefined',
+  keyValue: supabaseAnonKey ? supabaseAnonKey.substring(0, 20) + '...' : 'undefined',
   globalExists: typeof global !== 'undefined',
   globalThisExists: typeof globalThis !== 'undefined',
 });
@@ -21,23 +23,56 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Crear cliente con configuración completamente básica
 let supabase: any = null;
+let isUsingMock = false;
 
 try {
   // Configuración mínima sin opciones adicionales
   supabase = createClient(supabaseUrl, supabaseAnonKey);
-  console.log('Supabase client created successfully');
+  console.log('✅ Supabase client created successfully');
+  console.log('🔗 Supabase URL:', supabaseUrl);
 } catch (error) {
-  console.error('Error creating Supabase client:', error);
+  console.error('❌ Error creating Supabase client:', error);
+  console.log('🔄 Using mock client instead');
+  isUsingMock = true;
+  
   // Crear un cliente mock para desarrollo
   supabase = {
     from: () => ({
-      select: () => ({ eq: () => ({ single: () => ({ data: null, error: null }) }) }),
-      insert: () => ({ select: () => ({ single: () => ({ data: null, error: null }) }) }),
-      update: () => ({ eq: () => ({ data: null, error: null }) }),
-      delete: () => ({ eq: () => ({ data: null, error: null }) })
+      select: () => ({ 
+        eq: () => ({ 
+          single: () => ({ 
+            data: null, 
+            error: { message: 'Mock client - no real data' } 
+          }) 
+        }),
+        gte: () => ({ lte: () => ({ order: () => ({ data: [], error: null }) }) })
+      }),
+      insert: () => ({ 
+        select: () => ({ 
+          single: () => ({ 
+            data: { id: 'mock-id' }, 
+            error: null 
+          }) 
+        }) 
+      }),
+      update: () => ({ 
+        eq: () => ({ 
+          data: null, 
+          error: null 
+        }) 
+      }),
+      delete: () => ({ 
+        eq: () => ({ 
+          data: null, 
+          error: null 
+        }) 
+      })
     })
   };
 }
+
+// Exportar también el estado para debugging
+export const isSupabaseMock = isUsingMock;
 
 export { supabase }
 
