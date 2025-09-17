@@ -3,17 +3,31 @@ import { useAuthStore } from '@/interface/state/authStore'
 import { Button } from '@/interface/components/ui/Button'
 import { Input } from '@/interface/components/ui/Input'
 import { Card } from '@/interface/components/ui/Card'
-import { Eye, EyeOff, Zap } from 'lucide-react'
+import { Eye, EyeOff, Zap, UserPlus } from 'lucide-react'
 
 export function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const { login, isLoading } = useAuthStore()
+  const [isRegisterMode, setIsRegisterMode] = useState(false)
+  const [error, setError] = useState('')
+  const { login, register, isLoading } = useAuthStore()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await login(username, password)
+    setError('')
+    
+    if (isRegisterMode) {
+      const result = await register(username, password)
+      if (!result.success) {
+        setError(result.error || 'Error al registrar usuario')
+      }
+    } else {
+      const success = await login(username, password)
+      if (!success) {
+        setError('Usuario o contraseña incorrectos')
+      }
+    }
   }
 
   return (
@@ -28,7 +42,7 @@ export function LoginPage() {
             AuraTrack
           </h1>
           <p className="text-caption text-neutral-600 dark:text-neutral-400">
-            Diario de migrañas MVP
+            {isRegisterMode ? 'Crear nueva cuenta' : 'Diario de migrañas MVP'}
           </p>
         </div>
 
@@ -76,26 +90,41 @@ export function LoginPage() {
               </div>
             </div>
 
+            {/* Error message */}
+            {error && (
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              </div>
+            )}
+
             <Button
               type="submit"
               className="w-full btn-primary"
               disabled={isLoading}
             >
-              {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+              {isLoading 
+                ? (isRegisterMode ? 'Creando cuenta...' : 'Iniciando sesión...') 
+                : (isRegisterMode ? 'Crear cuenta' : 'Iniciar sesión')
+              }
             </Button>
           </form>
 
-          {/* Información de prueba */}
-          <div className="mt-6 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
-            <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Usuario de prueba:
-            </h3>
-            <p className="text-xs text-neutral-600 dark:text-neutral-400">
-              Usuario: <code className="bg-neutral-200 dark:bg-neutral-700 px-1 rounded">testuser</code>
-            </p>
-            <p className="text-xs text-neutral-600 dark:text-neutral-400">
-              Contraseña: <code className="bg-neutral-200 dark:bg-neutral-700 px-1 rounded">test123</code>
-            </p>
+          {/* Toggle between login and register */}
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegisterMode(!isRegisterMode)
+                setError('')
+                setUsername('')
+                setPassword('')
+              }}
+              className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 flex items-center justify-center gap-2"
+              disabled={isLoading}
+            >
+              <UserPlus className="w-4 h-4" />
+              {isRegisterMode ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
+            </button>
           </div>
         </Card>
 

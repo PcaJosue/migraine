@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { authAdapter } from '@/shared/config/container'
 
 interface AuthState {
   user: {
@@ -9,6 +10,7 @@ interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
   login: (username: string, password: string) => Promise<boolean>
+  register: (username: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   setLoading: (loading: boolean) => void
 }
@@ -24,22 +26,62 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true })
         
         try {
-          // Para MVP, validación simple
-          if (username === 'testuser' && password === 'test123') {
-            set({
-              user: { id: '1', username },
-              isAuthenticated: true,
-              isLoading: false
-            })
-            return true
-          }
+          // Obtener usuario de JSONBin.io
+          const userResult = await authAdapter.getUser(username)
           
-          set({ isLoading: false })
-          return false
+          if (!userResult.success || !userResult.data) {
+            set({ isLoading: false })
+            return false
+          }
+
+          // Verificar contraseña
+          const passwordResult = await authAdapter.verifyPassword(password, userResult.data.password_hash)
+          
+          if (!passwordResult.success || !passwordResult.data) {
+            set({ isLoading: false })
+            return false
+          }
+
+          // Login exitoso
+          set({
+            user: { id: userResult.data.id, username },
+            isAuthenticated: true,
+            isLoading: false
+          })
+          return true
         } catch (error) {
           console.error('Login error:', error)
           set({ isLoading: false })
           return false
+        }
+      },
+
+      register: async (username: string, password: string) => {
+        set({ isLoading: true })
+        
+        try {
+          // Crear hash simple de la contraseña (en producción usar bcrypt)
+          const passwordHash = btoa(password) // Base64 encoding simple
+          
+          const result = await authAdapter.createUser(username, passwordHash)
+          
+          if (!result.success) {
+            set({ isLoading: false })
+            return { success: false, error: result.error?.message || 'Error al crear usuario' }
+          }
+
+          // Registro exitoso, hacer login automático
+          set({
+            user: { id: result.data.id, username },
+            isAuthenticated: true,
+            isLoading: false
+          })
+          
+          return { success: true }
+        } catch (error) {
+          console.error('Register error:', error)
+          set({ isLoading: false })
+          return { success: false, error: 'Error inesperado al registrar usuario' }
         }
       },
 

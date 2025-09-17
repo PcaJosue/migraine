@@ -1,10 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import babel from 'vite-plugin-babel'
 
 export default defineConfig({
-  plugins: [react(), babel()],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -14,20 +13,5 @@ export default defineConfig({
       "@/interface": path.resolve(__dirname, "./src/interface"),
       "@/shared": path.resolve(__dirname, "./src/shared"),
     },
-  },
-  define: {
-    global: 'globalThis',
-  },
-  optimizeDeps: {
-    include: ['@supabase/supabase-js'],
-  },
-  build: {
-    outDir: 'dist',
-    target: 'es2020',
-    rollupOptions: {
-      output: {
-        format: 'es'
-      }
-    }
   }
 })

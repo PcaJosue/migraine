@@ -1,14 +1,14 @@
-import { SupabaseEntryAdapter } from '@/infrastructure/adapters/SupabaseEntryAdapter'
-import { SupabaseAuthAdapter } from '@/infrastructure/adapters/SupabaseAuthAdapter'
+import { JSONBinEntryAdapter } from '@/infrastructure/adapters/JSONBinEntryAdapter'
+import { JSONBinAuthAdapter } from '@/infrastructure/adapters/JSONBinAuthAdapter'
 import { ClockAdapter } from '@/infrastructure/adapters/ClockAdapter'
 import { TelemetryAdapter } from '@/infrastructure/adapters/TelemetryAdapter'
 import { CreateQuickEntry } from '@/application/use-cases/CreateQuickEntry'
 import { ListEntries } from '@/application/use-cases/ListEntries'
 import { ExportCsv } from '@/application/use-cases/ExportCsv'
 
-// Infrastructure adapters
-const entryRepository = new SupabaseEntryAdapter()
-const authAdapter = new SupabaseAuthAdapter()
+// Infrastructure adapters - Usar JSONBin.io para persistencia
+const entryRepository = new JSONBinEntryAdapter()
+const authAdapter = new JSONBinAuthAdapter()
 const clockAdapter = new ClockAdapter()
 const telemetryAdapter = new TelemetryAdapter()
 
