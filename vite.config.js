@@ -18,4 +18,12 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
+  build: {
+    rollupOptions: {
+      external: [],
+    }
+  },
+  optimizeDeps: {
+    include: ['@supabase/supabase-js']
+  }
 })
