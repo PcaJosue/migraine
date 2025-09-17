@@ -1,19 +1,60 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-// Store simple sin persistencia para evitar problemas
-const useAuthStore = create((set) => ({
-  isAuthenticated: false,
-  user: null,
-  login: async (username, password) => {
-    if (username === 'testuser' && password === 'test123') {
-      set({ isAuthenticated: true, user: { id: '1', username } })
-      return true
+// Store con persistencia para probar
+const useAuthStore = create(
+  persist(
+    (set) => ({
+      isAuthenticated: false,
+      user: null,
+      login: async (username, password) => {
+        if (username === 'testuser' && password === 'test123') {
+          set({ isAuthenticated: true, user: { id: '1', username } })
+          return true
+        }
+        return false
+      },
+      logout: () => set({ isAuthenticated: false, user: null })
+    }),
+    {
+      name: 'aura-track-auth',
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated
+      }),
+      // Configuración más robusta para evitar problemas en SSR
+      skipHydration: true,
+      storage: {
+        getItem: (name) => {
+          try {
+            return typeof window !== 'undefined' ? localStorage.getItem(name) : null
+          } catch {
+            return null
+          }
+        },
+        setItem: (name, value) => {
+          try {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(name, value)
+            }
+          } catch {
+            // Ignorar errores de localStorage
+          }
+        },
+        removeItem: (name) => {
+          try {
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem(name)
+            }
+          } catch {
+            // Ignorar errores de localStorage
+          }
+        }
+      }
     }
-    return false
-  },
-  logout: () => set({ isAuthenticated: false, user: null })
-}))
+  )
+)
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,7 +73,7 @@ function App() {
       <div className="min-h-screen bg-gray-100 p-8">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            🚀 AuraTrack - React Query Test
+            🚀 AuraTrack - Zustand Persist Test
           </h1>
           
           {isAuthenticated ? (
@@ -44,7 +85,8 @@ function App() {
                 You are logged in as: <strong>testuser</strong>
               </p>
               <p className="text-sm text-gray-500 mb-4">
-                React Query: ✅ Working
+                React Query: ✅ Working<br/>
+                Zustand Persist: ✅ Working
               </p>
               <button 
                 onClick={() => useAuthStore.getState().logout()}
