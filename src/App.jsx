@@ -1,62 +1,7 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useTheme } from '@/shared/hooks/useTheme'
 import { LoginPage } from '@/interface/pages/LoginPage'
-
-// Store con persistencia para probar
-const useAuthStore = create(
-  persist(
-    (set) => ({
-      isAuthenticated: false,
-      user: null,
-      login: async (username, password) => {
-        if (username === 'testuser' && password === 'test123') {
-          set({ isAuthenticated: true, user: { id: '1', username } })
-          return true
-        }
-        return false
-      },
-      logout: () => set({ isAuthenticated: false, user: null })
-    }),
-    {
-      name: 'aura-track-auth',
-      partialize: (state) => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated
-      }),
-      // Configuración más robusta para evitar problemas en SSR
-      skipHydration: true,
-      storage: {
-        getItem: (name) => {
-          try {
-            return typeof window !== 'undefined' ? localStorage.getItem(name) : null
-          } catch {
-            return null
-          }
-        },
-        setItem: (name, value) => {
-          try {
-            if (typeof window !== 'undefined') {
-              localStorage.setItem(name, value)
-            }
-          } catch {
-            // Ignorar errores de localStorage
-          }
-        },
-        removeItem: (name) => {
-          try {
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem(name)
-            }
-          } catch {
-            // Ignorar errores de localStorage
-          }
-        }
-      }
-    }
-  )
-)
+import { useAuthStore } from '@/interface/state/authStore'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,7 +21,7 @@ function App() {
       <div className="min-h-screen bg-gray-100 p-8">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            🚀 AuraTrack - LoginPage Component Test
+            🚀 AuraTrack - Original Auth Store Test
           </h1>
           
         {isAuthenticated ? (
@@ -91,7 +36,8 @@ function App() {
               React Query: ✅ Working<br/>
               Zustand Persist: ✅ Working<br/>
               Theme Hook: ✅ Working<br/>
-              LoginPage Component: ✅ Working
+              LoginPage Component: ✅ Working<br/>
+              Original Auth Store: ✅ Working
             </p>
             <button 
               onClick={() => useAuthStore.getState().logout()}
