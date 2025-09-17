@@ -11,6 +11,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
+console.log('Supabase config check:', {
+  hasUrl: !!supabaseUrl,
+  hasKey: !!supabaseAnonKey,
+  globalExists: typeof global !== 'undefined',
+  globalThisExists: typeof globalThis !== 'undefined'
+})
+
 const supabaseOptions = {
   auth: {
     autoRefreshToken: true,
