@@ -26,18 +26,10 @@ export default defineConfig({
     },
   },
   define: {
-    global: 'globalThis',
-    'globalThis.global': 'globalThis', // Agrega esto
-    'process.env': {}
+    global: 'window',
   },
   optimizeDeps: {
     include: ['@supabase/supabase-js'],
-    // Agrega esto para forzar la optimización
-    esbuildOptions: {
-      define: {
-        global: 'globalThis'
-      }
-    }
   },
   build: {
     outDir: 'dist',
