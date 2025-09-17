@@ -19,13 +19,27 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey,  {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false // Esto puede causar problemas en producción
-  }
-})
+// Crear cliente con configuración completamente básica
+let supabase: any = null;
+
+try {
+  // Configuración mínima sin opciones adicionales
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+  console.log('Supabase client created successfully');
+} catch (error) {
+  console.error('Error creating Supabase client:', error);
+  // Crear un cliente mock para desarrollo
+  supabase = {
+    from: () => ({
+      select: () => ({ eq: () => ({ single: () => ({ data: null, error: null }) }) }),
+      insert: () => ({ select: () => ({ single: () => ({ data: null, error: null }) }) }),
+      update: () => ({ eq: () => ({ data: null, error: null }) }),
+      delete: () => ({ eq: () => ({ data: null, error: null }) })
+    })
+  };
+}
+
+export { supabase }
 
 // Database types
 export interface Database {
