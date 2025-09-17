@@ -2,18 +2,11 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import babel from 'vite-plugin-babel'; // Importa el plugin
 
 export default defineConfig({
   plugins: [react(),
-    nodePolyfills({
-      globals: {
-        Buffer: true,
-        global: true,
-        process: true,
-      },
-      // Agrega esto para protocolos específicos
-      protocolImports: true,
-    })
+    babel()
   ],
   resolve: {
     alias: {
