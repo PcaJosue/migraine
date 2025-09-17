@@ -26,7 +26,7 @@ export default defineConfig({
     },
   },
   define: {
-    global: 'window',
+    global: {},
   },
   optimizeDeps: {
     include: ['@supabase/supabase-js'],
