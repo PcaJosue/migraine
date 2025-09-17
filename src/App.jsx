@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useTheme } from '@/shared/hooks/useTheme'
 
 // Store con persistencia para probar
 const useAuthStore = create(
@@ -67,13 +68,14 @@ const queryClient = new QueryClient({
 
 function App() {
   const { isAuthenticated } = useAuthStore()
+  useTheme() // Inicializar el tema
 
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-gray-100 p-8">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            🚀 AuraTrack - Zustand Persist Test
+            🚀 AuraTrack - Theme Hook Test
           </h1>
           
           {isAuthenticated ? (
@@ -86,7 +88,8 @@ function App() {
               </p>
               <p className="text-sm text-gray-500 mb-4">
                 React Query: ✅ Working<br/>
-                Zustand Persist: ✅ Working
+                Zustand Persist: ✅ Working<br/>
+                Theme Hook: ✅ Working
               </p>
               <button 
                 onClick={() => useAuthStore.getState().logout()}
