@@ -13,11 +13,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 const supabaseOptions = {
   auth: {
-    persistSession: true,
     autoRefreshToken: true,
-  },
-  global: {
-    headers: {},
+    persistSession: true,
+    detectSessionInUrl: true
   }
 }
 
