@@ -3,8 +3,6 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
-
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(),
     nodePolyfills({
@@ -13,6 +11,8 @@ export default defineConfig({
         global: true,
         process: true,
       },
+      // Agrega esto para protocolos específicos
+      protocolImports: true,
     })
   ],
   resolve: {
@@ -27,12 +27,21 @@ export default defineConfig({
   },
   define: {
     global: 'globalThis',
+    'globalThis.global': 'globalThis', // Agrega esto
     'process.env': {}
   },
   optimizeDeps: {
-    include: ['@supabase/supabase-js']
+    include: ['@supabase/supabase-js'],
+    // Agrega esto para forzar la optimización
+    esbuildOptions: {
+      define: {
+        global: 'globalThis'
+      }
+    }
   },
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    // Agrega esto para el build de producción
+    target: 'es2020'
   }
 })

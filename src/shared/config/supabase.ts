@@ -1,32 +1,31 @@
 import { createClient } from '@supabase/supabase-js'
 
+if (typeof global === 'undefined') {
+  globalThis.global = globalThis;
+}
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing environment variables:', {
-    url: !!supabaseUrl,
-    key: !!supabaseAnonKey
-  })
-  throw new Error('Missing Supabase environment variables')
-}
-
-console.log('Supabase config check:', {
+console.log('Pre-Supabase check:', {
   hasUrl: !!supabaseUrl,
   hasKey: !!supabaseAnonKey,
   globalExists: typeof global !== 'undefined',
-  globalThisExists: typeof globalThis !== 'undefined'
-})
+  globalThisExists: typeof globalThis !== 'undefined',
+});
 
-const supabaseOptions = {
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables')
+}
+
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey,  {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: false // Esto puede causar problemas en producción
   }
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, supabaseOptions)
+})
 
 // Database types
 export interface Database {
