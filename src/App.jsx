@@ -122,126 +122,73 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', padding: '2rem' }}>
-        <div style={{ 
-          maxWidth: '32rem', 
-          margin: '0 auto', 
-          backgroundColor: 'white', 
-          borderRadius: '0.5rem', 
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', 
-          padding: '1.5rem' 
-        }}>
-          <h1 style={{ 
-            fontSize: '1.5rem', 
-            fontWeight: 'bold', 
-            color: '#1f2937', 
-            marginBottom: '1.5rem', 
-            textAlign: 'center' 
-          }}>
-            🔍 AuraTrack - Debug Persistencia
+      <div className="min-h-screen bg-neutral-50 p-8">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+          <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+            🚀 AuraTrack - Versión Estable
           </h1>
           
-          {/* Debug Info */}
-          <div style={{ 
-            backgroundColor: '#fef3c7', 
-            padding: '1rem', 
-            borderRadius: '0.5rem', 
-            marginBottom: '1rem',
-            fontSize: '0.75rem',
-            fontFamily: 'monospace'
-          }}>
-            <h3 style={{ fontWeight: '600', color: '#92400e', marginBottom: '0.5rem' }}>
-              🔍 Debug Info:
-            </h3>
-            <pre style={{ whiteSpace: 'pre-wrap', color: '#92400e' }}>
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-          </div>
+          {/* Debug Info - Solo mostrar si hay problemas */}
+          {debugInfo.error && (
+            <div className="bg-yellow-100 p-4 rounded-lg mb-4 text-xs font-mono">
+              <h3 className="font-semibold text-yellow-800 mb-2">Debug Info:</h3>
+              <pre className="whitespace-pre-wrap text-yellow-700">
+                {JSON.stringify(debugInfo, null, 2)}
+              </pre>
+            </div>
+          )}
           
           {isAuthenticated ? (
-            <div style={{ textAlign: 'center' }}>
-              <h2 style={{ 
-                fontSize: '1.125rem', 
-                fontWeight: '600', 
-                color: '#059669', 
-                marginBottom: '1rem' 
-              }}>
-                ✅ Logueado
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-green-600 mb-4">
+                ✅ Aplicación Funcionando
               </h2>
-              <p style={{ color: '#4b5563', marginBottom: '1rem' }}>
-                Usuario: <strong>{user?.username || 'testuser'}</strong>
+              <p className="text-gray-600 mb-4">
+                Logueado como: <strong>{user?.username || 'testuser'}</strong>
               </p>
+              <div className="bg-green-100 p-4 rounded-lg mb-4">
+                <h3 className="font-semibold text-green-800 mb-2">Componentes Funcionando:</h3>
+                <div className="text-sm text-green-700 space-y-1">
+                  <p>✅ React</p>
+                  <p>✅ Tailwind CSS</p>
+                  <p>✅ Zustand</p>
+                  <p>✅ React Query</p>
+                  <p>✅ Persistencia</p>
+                </div>
+              </div>
               <button 
                 onClick={() => useAuthStore.getState().logout()}
-                style={{
-                  backgroundColor: '#ef4444',
-                  color: 'white',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '0.375rem',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#dc2626'}
-                onMouseOut={(e) => e.target.style.backgroundColor = '#ef4444'}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
               >
                 Logout
               </button>
             </div>
           ) : (
             <div>
-              <h2 style={{ 
-                fontSize: '1.125rem', 
-                fontWeight: '600', 
-                color: '#374151', 
-                marginBottom: '1rem' 
-              }}>
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">
                 Login
               </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="space-y-4">
                 <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.875rem', 
-                    fontWeight: '500', 
-                    color: '#374151', 
-                    marginBottom: '0.5rem' 
-                  }}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Usuario
                   </label>
                   <input 
                     type="text" 
                     id="username"
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem 0.75rem',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '0.375rem',
-                      outline: 'none'
-                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="testuser"
                     defaultValue="testuser"
                   />
                 </div>
                 <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '0.875rem', 
-                    fontWeight: '500', 
-                    color: '#374151', 
-                    marginBottom: '0.5rem' 
-                  }}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Contraseña
                   </label>
                   <input 
                     type="password" 
                     id="password"
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem 0.75rem',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '0.375rem',
-                      outline: 'none'
-                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="test123"
                     defaultValue="test123"
                   />
@@ -250,32 +197,15 @@ function App() {
                   onClick={async () => {
                     const username = document.getElementById('username').value
                     const password = document.getElementById('password').value
-                    console.log('Attempting login with:', { username, password })
-                    const result = await useAuthStore.getState().login(username, password)
-                    console.log('Login result:', result)
+                    await useAuthStore.getState().login(username, password)
                   }}
-                  style={{
-                    width: '100%',
-                    backgroundColor: '#3b82f6',
-                    color: 'white',
-                    padding: '0.5rem',
-                    borderRadius: '0.375rem',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = '#2563eb'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = '#3b82f6'}
+                  className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
                 >
                   Login
                 </button>
               </div>
-              <div style={{ 
-                marginTop: '1rem', 
-                padding: '0.75rem', 
-                backgroundColor: '#f3f4f6', 
-                borderRadius: '0.375rem' 
-              }}>
-                <p style={{ fontSize: '0.875rem', color: '#4b5563' }}>
+              <div className="mt-4 p-3 bg-gray-100 rounded-md">
+                <p className="text-sm text-gray-600">
                   <strong>Credenciales:</strong><br/>
                   Usuario: testuser<br/>
                   Contraseña: test123
