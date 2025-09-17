@@ -1,13 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
-import babel from 'vite-plugin-babel'; // Importa el plugin
+import babel from 'vite-plugin-babel'
 
 export default defineConfig({
-  plugins: [react(),
-    babel()
-  ],
+  plugins: [react(), babel()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -26,7 +23,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    // Agrega esto para el build de producción
     target: 'es2020'
   }
 })
