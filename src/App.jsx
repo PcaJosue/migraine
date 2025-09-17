@@ -1,59 +1,74 @@
+import React from 'react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-// Store simple que sabemos que funciona
-const useAuthStore = create(
-  persist(
-    (set) => ({
-      isAuthenticated: false,
-      user: null,
-      login: async (username, password) => {
-        if (username === 'testuser' && password === 'test123') {
-          set({ isAuthenticated: true, user: { id: '1', username } })
-          return true
+// Store con persistencia manual más robusta
+const useAuthStore = create((set, get) => ({
+  isAuthenticated: false,
+  user: null,
+  _hasHydrated: false,
+  
+  login: async (username, password) => {
+    if (username === 'testuser' && password === 'test123') {
+      const newState = { 
+        isAuthenticated: true, 
+        user: { id: '1', username } 
+      }
+      set(newState)
+      
+      // Persistir manualmente
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.setItem('aura-track-auth', JSON.stringify(newState))
+          console.log('Saved to localStorage:', newState)
         }
-        return false
-      },
-      logout: () => set({ isAuthenticated: false, user: null })
-    }),
-    {
-      name: 'aura-track-auth',
-      partialize: (state) => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated
-      }),
-      // Remover skipHydration para que funcione la persistencia
-      storage: {
-        getItem: (name) => {
-          try {
-            return typeof window !== 'undefined' ? localStorage.getItem(name) : null
-          } catch {
-            return null
-          }
-        },
-        setItem: (name, value) => {
-          try {
-            if (typeof window !== 'undefined') {
-              localStorage.setItem(name, value)
-            }
-          } catch {
-            // Ignorar errores de localStorage
-          }
-        },
-        removeItem: (name) => {
-          try {
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem(name)
-            }
-          } catch {
-            // Ignorar errores de localStorage
-          }
+      } catch (error) {
+        console.error('Error saving to localStorage:', error)
+      }
+      
+      return true
+    }
+    return false
+  },
+  
+  logout: () => {
+    const newState = { isAuthenticated: false, user: null }
+    set(newState)
+    
+    // Limpiar localStorage
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem('aura-track-auth')
+        console.log('Cleared localStorage')
+      }
+    } catch (error) {
+      console.error('Error clearing localStorage:', error)
+    }
+  },
+  
+  hydrate: () => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const stored = localStorage.getItem('aura-track-auth')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          console.log('Hydrating from localStorage:', parsed)
+          set({ ...parsed, _hasHydrated: true })
+          return
         }
       }
+    } catch (error) {
+      console.error('Error hydrating from localStorage:', error)
     }
-  )
-)
+    set({ _hasHydrated: true })
+  }
+}))
+
+// Hydratar inmediatamente si estamos en el cliente
+if (typeof window !== 'undefined') {
+  useAuthStore.getState().hydrate()
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,13 +80,51 @@ const queryClient = new QueryClient({
 })
 
 function App() {
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, user, _hasHydrated } = useAuthStore()
+  
+  // Debug: Check localStorage and Zustand state
+  const [debugInfo, setDebugInfo] = React.useState({})
+  
+  React.useEffect(() => {
+    const checkStorage = () => {
+      try {
+        const stored = localStorage.getItem('aura-track-auth')
+        const parsed = stored ? JSON.parse(stored) : null
+        setDebugInfo({
+          localStorage: stored,
+          parsed,
+          isAuthenticated,
+          user,
+          hasHydrated: _hasHydrated,
+          hasWindow: typeof window !== 'undefined',
+          hasLocalStorage: typeof localStorage !== 'undefined',
+          timestamp: new Date().toISOString()
+        })
+      } catch (error) {
+        setDebugInfo({
+          error: error.message,
+          isAuthenticated,
+          user,
+          hasHydrated: _hasHydrated,
+          hasWindow: typeof window !== 'undefined',
+          hasLocalStorage: typeof localStorage !== 'undefined',
+          timestamp: new Date().toISOString()
+        })
+      }
+    }
+    
+    checkStorage()
+    
+    // Check again after a delay to see if Zustand hydrates
+    const timer = setTimeout(checkStorage, 1000)
+    return () => clearTimeout(timer)
+  }, [isAuthenticated, user, _hasHydrated])
 
   return (
     <QueryClientProvider client={queryClient}>
       <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', padding: '2rem' }}>
         <div style={{ 
-          maxWidth: '28rem', 
+          maxWidth: '32rem', 
           margin: '0 auto', 
           backgroundColor: 'white', 
           borderRadius: '0.5rem', 
@@ -85,8 +138,25 @@ function App() {
             marginBottom: '1.5rem', 
             textAlign: 'center' 
           }}>
-            🚀 AuraTrack - Versión Estable
+            🔍 AuraTrack - Debug Persistencia
           </h1>
+          
+          {/* Debug Info */}
+          <div style={{ 
+            backgroundColor: '#fef3c7', 
+            padding: '1rem', 
+            borderRadius: '0.5rem', 
+            marginBottom: '1rem',
+            fontSize: '0.75rem',
+            fontFamily: 'monospace'
+          }}>
+            <h3 style={{ fontWeight: '600', color: '#92400e', marginBottom: '0.5rem' }}>
+              🔍 Debug Info:
+            </h3>
+            <pre style={{ whiteSpace: 'pre-wrap', color: '#92400e' }}>
+              {JSON.stringify(debugInfo, null, 2)}
+            </pre>
+          </div>
           
           {isAuthenticated ? (
             <div style={{ textAlign: 'center' }}>
@@ -96,27 +166,11 @@ function App() {
                 color: '#059669', 
                 marginBottom: '1rem' 
               }}>
-                ✅ Aplicación Funcionando
+                ✅ Logueado
               </h2>
               <p style={{ color: '#4b5563', marginBottom: '1rem' }}>
-                Logueado como: <strong>testuser</strong>
+                Usuario: <strong>{user?.username || 'testuser'}</strong>
               </p>
-              <div style={{ 
-                backgroundColor: '#dcfce7', 
-                padding: '1rem', 
-                borderRadius: '0.5rem', 
-                marginBottom: '1rem' 
-              }}>
-                <h3 style={{ fontWeight: '600', color: '#166534', marginBottom: '0.5rem' }}>
-                  Componentes Funcionando:
-                </h3>
-                <div style={{ fontSize: '0.875rem', color: '#15803d' }}>
-                  <p>✅ React</p>
-                  <p>✅ Zustand</p>
-                  <p>✅ React Query</p>
-                  <p>✅ Persistencia</p>
-                </div>
-              </div>
               <button 
                 onClick={() => useAuthStore.getState().logout()}
                 style={{
@@ -165,6 +219,7 @@ function App() {
                       outline: 'none'
                     }}
                     placeholder="testuser"
+                    defaultValue="testuser"
                   />
                 </div>
                 <div>
@@ -188,13 +243,16 @@ function App() {
                       outline: 'none'
                     }}
                     placeholder="test123"
+                    defaultValue="test123"
                   />
                 </div>
                 <button 
                   onClick={async () => {
                     const username = document.getElementById('username').value
                     const password = document.getElementById('password').value
-                    await useAuthStore.getState().login(username, password)
+                    console.log('Attempting login with:', { username, password })
+                    const result = await useAuthStore.getState().login(username, password)
+                    console.log('Login result:', result)
                   }}
                   style={{
                     width: '100%',
