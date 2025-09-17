@@ -19,11 +19,12 @@ export default defineConfig({
     global: 'globalThis',
   },
   build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
     rollupOptions: {
-      external: [],
+      output: {
+        manualChunks: undefined,
+      }
     }
-  },
-  optimizeDeps: {
-    include: ['@supabase/supabase-js']
   }
 })
